@@ -14,4 +14,23 @@ fs.readFile('input.txt', 'utf-8', (_, data) => {
     console.log(matches);
     const sum = matches.reduce((acc, current) => acc + current);
     console.log(sum);
+
+    regex = /(mul\(\d+,\d+\))|(do\(\))|(don\'t\(\))/g;
+    matches = data.match(regex);
+    console.log(matches);
+
+    let ans = 0, enabled = true;
+    matches.forEach((element) => {
+        if (element == "do()") {
+            enabled = true;
+        }
+        else if (element == "don't()") {
+            enabled = false;
+        }
+        else {
+            ans += enabled ? eval(element) : 0;
+        }
+    });
+
+    console.log(ans);
 });
