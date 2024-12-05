@@ -8,7 +8,7 @@ fs.readFile('input.txt', 'utf-8', (_, data) => {
     eval("mul(2, 3)");
     
     let matches = data.match(regex);
-    matches = matches.map((match) => {
+    matches = matches.map((match) => { // TODO: LEARN MORE ABOUT SCOPE
         return eval(match);
     });
     console.log(matches);
