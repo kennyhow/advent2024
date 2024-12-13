@@ -12,7 +12,6 @@ fs.readFile('input.txt', 'utf-8', (err, data) => {
             return new Set();
         })
     })
-    console.log(answer);
 
     const inGrid = ([x, y]) => {
         return x >= 0 && y >= 0 && x < n && y < m;
@@ -56,6 +55,34 @@ fs.readFile('input.txt', 'utf-8', (err, data) => {
         }
     }
 
+    console.log(total)
+
+    for(let value = 9; value >= 0; value--) {
+        for(let i = 0; i < n; i++) {
+            for(let j = 0; j < m; j++) {
+                if (data[i][j] !== value) continue;
+                if (value === 9) answer[i][j] = 1;
+                else {
+                    answer[i][j] = 0;
+                    let neighbours = getNeighbours(i, j);
+                    neighbours.forEach(([x, y]) => {
+                        if (data[x][y] == value + 1) {
+                            answer[i][j] += answer[x][y];
+                        }
+                    })
+                }
+            }
+        }
+    }
+
+    total = 0;
+    for(let i = 0; i < n; i++) {
+        for(let j = 0; j < m; j++) {
+            if (data[i][j] == 0) {
+                total += answer[i][j];
+            }
+        }
+    }
     console.log(total)
 
 })
