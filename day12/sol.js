@@ -92,10 +92,99 @@ fs.readFile('input.txt', 'utf-8', (err, data) => {
     for(let i = 0; i < n; i++) {
         for(let j = 0; j < m; j++) {
             if (JSON.stringify(getRep(i, j)) === JSON.stringify([i, j])) {
-                console.log(`${[i, j, data[i][j]]}, size=${size[i][j]}, perimeter=${perimeter[i][j]}`)
+                // console.log(`${[i, j, data[i][j]]}, size=${size[i][j]}, perimeter=${perimeter[i][j]}`)
                 answer += perimeter[i][j] * size[i][j];
             }
         }
     }
     console.log(answer);
+
+    const getSides = (x, y) => {
+        let deltas = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+        let results = []; // [x, y, orientation]
+
+        deltas.forEach(([a, b], index) => {
+            let [x2, y2] = [x + a, y + b];
+            if (!(inGrid(x2, y2) && data[x2][y2] === data[x][y])) {
+                results.push([x, y, index])
+            }
+        })
+        return results;
+    }
+
+    const mergeSides = (sides) => {
+        // return number of unique sides
+        sides = new Set(sides);
+
+        // console.log(`sides is ${Array.from(sides).join(' ')}`)
+        // console.log(`original size is ${sides.size}`)
+
+        let deleted = new Set();
+        let numSides = 0;
+        sides.forEach((s) => {
+            if (deleted.has(s)) return;
+            // console.log(`unique side: ${s}`)
+            numSides += 1;
+
+            let [x, y, orientation] = JSON.parse(s);
+            // 0 => down, 1 => up, 2 => right, 3 => left
+            if (orientation === 0 || orientation === 1) {
+                // move left/right
+                for(let y2 = y + 1; y2 < m; y2++) {
+                    if (sides.has(JSON.stringify([x, y2, orientation]))) {
+                        deleted.add(JSON.stringify([x, y2, orientation]))
+                    }
+                    else break;
+                }
+                for(let y2 = y - 1; y2 >= 0; y2--) {
+                    if (sides.has(JSON.stringify([x, y2, orientation]))) {
+                        deleted.add(JSON.stringify([x, y2, orientation]))
+                    }
+                    else break;
+                }
+            }
+            else {
+                for(let x2 = x + 1; x2 < n; x2++) {
+                    if (sides.has(JSON.stringify([x2, y, orientation]))) {
+                        deleted.add(JSON.stringify([x2, y, orientation]))
+                    }
+                    else break;
+                }
+                for(let x2 = x - 1; x2 >= 0; x2--) {
+                    if (sides.has(JSON.stringify([x2, y, orientation]))) {
+                        deleted.add(JSON.stringify([x2, y, orientation]))
+                    }
+                    else break;
+                }
+            }
+        })
+
+        return numSides;
+    }
+
+    let sidesArray = Array.from({length: n}, () => {
+        return Array.from({length: m}, () => new Set())
+    }) // contains JSON.stringify([x, y, orientation])
+
+    for(let i = 0; i < n; i++) {
+        for(let j = 0; j < m; j++) {
+            let [a, b] = getRep(i, j);
+            let currentSides = getSides(i, j);
+            currentSides.forEach((s) => {
+                sidesArray[a][b].add(JSON.stringify(s));
+            })
+        }
+    }
+
+    let total = 0;
+    for(let i = 0; i < n; i++) {
+        for(let j = 0; j < m; j++) {
+            if (JSON.stringify([i, j]) === JSON.stringify(getRep(i, j))) {
+                let result = mergeSides(sidesArray[i][j]);
+                // console.log(`${data[i][j]} has numSides=${result}`)
+                total += result * size[i][j];
+            }
+        }
+    }
+    console.log(total);
 })
