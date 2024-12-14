@@ -29,4 +29,16 @@ fs.readFile('input.txt', 'utf-8', (err, data) => {
         }
     }
     console.log(cost);
+
+    // aCount * (button1) + bCount * (button2) = (prize), vectors in N
+    // a * (x1, y1) + b * (x2, y2) = (r1, r2)
+    // (a * x1 + b * x2) == r1, etc
+    // if (x1, y1) is linearly independent from (x2, y2), answer is unique and trivial to find
+    // otherwise, let d = gcd(...). then, we reduce this problem to
+    // a * k1 + b * k2 = k3, for k_i in N
+    // impossible if gcd(k1, k2) does not divide k3
+    // so wlog assume gcd(k1, k2) = 1
+    // a = k3 / k1 (mod k2) and b = k3 / k2 (mod k1)
+    // claim (unfounded): any value of b gives an appropriate value of k1
+    // so we just take the minimum value (which is the principal value)
 })
