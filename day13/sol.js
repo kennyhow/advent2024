@@ -1,4 +1,15 @@
+// thx chatgpt <3
+function gcd(a, b) {
+    while (b !== 0) {
+        [a, b] = [b, a % b];
+    }
+    return a;
+}
+
+
 const fs = require('fs');
+const math = require('mathjs');
+
 fs.readFile('input.txt', 'utf-8', (err, data) => {
     data = data.trim().split('\n');
     let button1 = [], button2 = [];
@@ -39,6 +50,39 @@ fs.readFile('input.txt', 'utf-8', (err, data) => {
     // impossible if gcd(k1, k2) does not divide k3
     // so wlog assume gcd(k1, k2) = 1
     // a = k3 / k1 (mod k2) and b = k3 / k2 (mod k1)
-    // claim (unfounded): any value of b gives an appropriate value of k1
+    // claim (unfounded): any value of a gives an appropriate value of k1
     // so we just take the minimum value (which is the principal value)
+
+    
+    
+    cost = 0;
+    for(let index = 0; index < n; index++) {
+        let [x1, y1] = button1[index];
+        let [x2, y2] = button2[index];
+        let [res1, res2] = prize[index];
+        [res1, res2] = [res1 + 10000000000000, res2 + 10000000000000];
+
+        const independent = ([a, b], [c, d]) => {
+            // a/b = c/d iff ad = bc
+            return (a * d !== b * c);
+        }
+
+        // if linearly independent
+        if (independent([x1, y1], [x2, y2])) {
+            // a(x1, y1) + b(x2, y2) = (r1, r2)
+            // x * M = res
+            let M = math.transpose(math.matrix([[x1, y1], [x2, y2]]));
+            let res = math.matrix([res1, res2]);
+            let x = math.lusolve(M, res)._data;
+            let [a, b] = x.map(Math.round);
+            
+            if (a * x1 + b * x2 == res1 && a * y1 + b * y2 == res2 && a >= 0 && b >= 0) {
+                cost += 3 * a + b;
+            }
+        }
+        else {
+            console.log("DEPENDENT!!!!!");
+        }
+    }
+    console.log(cost);
 })
