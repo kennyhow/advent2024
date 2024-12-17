@@ -141,7 +141,69 @@ fs.readFile('input.3.txt', 'utf-8', (err, data) => {
     }
 
     let [grid, steps] = parseInput(data);
-    console.log(grid);
-    console.log(grid.join('\n'))
-    console.log(`steps is ${steps}`)
+    const getDeltaFromDirection = (direction) => {
+        switch(direction) {
+            case '^':
+                return [-1, 0];
+            case 'v':
+                return [1, 0];
+            case '>':
+                return [0, 1];
+            case '<':
+                return [0, -1];
+        }
+        throw new Error("Invalid direction"); 
+    }
+
+    const getFrontiers = (direction, x, y) => {
+        
+    }
+
+    const forcePush = (direction, x, y) => {
+
+    }
+
+    const pushVertical = (direction, x, y) => {
+        let [dx, dy] = getDeltaFromDirection(direction);
+        let frontier = getFrontiers(direction, x, y);
+
+        let canPush = true;
+        frontier.forEach(([x_new, y_new]) => {
+            canPush &= (grid[x_new + dx][y_new + dy] === '.');
+        })
+        if (!canPush) return [x, y];
+        else {
+            forcePush(direction, x, y);
+            return [x + dx, y + dy];
+        }
+    }
+
+    const pushHorizontal = (direction, x, y) => {
+        let [dx, dy] = getDeltaFromDirection(direction);
+        for(let steps = 1; ; steps++) {
+            let cell = grid[x + dx * steps][y + dy * steps]
+            if (cell === '#') {
+                // cannot push
+                return [x, y];
+            }
+            else if (cell === '.') {
+                // @[][]. => .@[][]
+                for(let k = steps; k >= 1; k--) {
+                    grid[x + k * dx][y + k * dy] = grid[x + (k - 1) * dx][y + (k - 1) * dy];
+                }
+
+                grid[x][y] = '.';
+                return [x + dx, y + dy];
+            }
+        }
+    }
+
+    const push = (direction, x, y) => {
+        if ('^v'.includes(direction)) {
+            return pushVertical(direction, x, y);
+        }
+        else {
+            return pushHorizontal(direction, x, y);
+        }
+    }
 })
