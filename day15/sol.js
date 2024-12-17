@@ -92,7 +92,7 @@ fs.readFile('input.txt', 'utf-8', (err, data) => {
         [x, y] = push(c, x, y);
         // console.log(grid.map((line) => line.join('')).join('\n'));
     })
-    console.log(grid.map((line) => line.join('')).join('\n'));
+    //console.log(grid.map((line) => line.join('')).join('\n'));
 
 
     const calcGPS = () => {
@@ -107,5 +107,41 @@ fs.readFile('input.txt', 'utf-8', (err, data) => {
         return total;
     }
 
-    console.log(calcGPS());
+    //console.log(calcGPS());
+})
+
+fs.readFile('input.3.txt', 'utf-8', (err, data) => {
+    const parseInput = (data) => {
+        data = data.trim().split('\n').map((line) => line.trim());
+        let grid = [], steps = [];
+        
+        let midpoint = false;
+        data.forEach((line) => {
+            if (line === '') midpoint = true;
+            else {
+                if (midpoint) {
+                    steps.push(line);
+                }
+                else {
+                    console.log(`line is ${line}`);
+                    console.log(`after transformation, line is now ${line
+                        .replace(/\./g, '..')
+                        .replace(/#/g, '##')
+                        .replace(/O/g, '[]')
+                        .replace(/@/g, '@.')}`)
+                    grid.push(line
+                        .replace(/\./g, '..')
+                        .replace(/#/g, '##')
+                        .replace(/O/g, '[]')
+                        .replace(/@/g, '@.'));
+                }
+            }
+        })
+        return [grid, steps.join('')];
+    }
+
+    let [grid, steps] = parseInput(data);
+    console.log(grid);
+    console.log(grid.join('\n'))
+    console.log(`steps is ${steps}`)
 })
