@@ -49,4 +49,113 @@ fs.readFile('input.txt', 'utf-8', (err, data) => {
         product *= quadrantCounts.get(i);
     }
     console.log(product);
+
+    const getHorizontalComplement = (x, y) => {
+        // (x, y) => ((n - 1) - x, y)
+        return [n - 1 - x, y];
+    }
+
+    const symmetric = (positions) => {
+        // am guessing its symmetric across the vertical axis
+        let markedPositions = new Set();
+        positions.forEach(([x, y]) => {
+            markedPositions.add(JSON.stringify([x, y]));
+        })
+
+        let isSymmetric = true;
+        positions.forEach(([x, y]) => {
+            let complement = getHorizontalComplement(x, y);
+            if (!markedPositions.has(JSON.stringify(complement))) {
+                isSymmetric = false;
+                return;
+            }
+        })
+        return isSymmetric;
+    }
+
+    const getGrid = (positions) => {        
+        let grid = Array.from({length: m}, () => {
+            return Array.from({length: n}, () => 0)
+        })
+
+        for(let i = 0; i < positions.length; i++) {
+            let [x, y] = positions[i];
+            grid[y][x] += 1;
+        }
+
+        return grid;
+    }
+
+    const getScore = (grid) => {
+        let reps = Array.from({length: m}, (_, index1) => {
+            return Array.from({length: n}, (_, index2) => {
+                return [index1, index2];
+            })
+        })
+        let size = Array.from({length: m}, () => {
+            return Array.from({length: n}, () => {
+                return 1;
+            })
+        })
+
+        const unite = (x1, y1, x2, y2) => {
+            let rep1 = getRep(x1, y1);
+            let rep2 = getRep(x2, y2);
+            if (JSON.stringify(rep1) === JSON.stringify(rep2)) return;
+            [x1, y1] = rep1;
+            [x2, y2] = rep2;
+    
+            if (size[x1][y1] > size[x2][y2]) {
+                [x1, y1, x2, y2] = [x2, y2, x1, y1];
+            }
+    
+            // size(first) <= size(second)
+            // make second the representative
+            size[x2][y2] += size[x1][y1];
+            reps[x1][y1] = getRep(x2, y2);
+        } 
+    
+        const getRep = (x, y) => {
+            let [x2, y2] = reps[x][y];
+            if (x2 !== x || y2 !== y) {
+                reps[x][y] = getRep(x2, y2);
+            }
+            return reps[x][y];
+        }
+
+        for(let i = 0; i < m - 1; i++) {
+            for(let j = 0; j < n - 1; j++) {
+                if (grid[i][j] === grid[i][j + 1]) {
+                    unite(i, j, i, j + 1);
+                }
+                if (grid[i][j] === grid[i + 1][j]) {
+                    unite(i, j, i + 1, j)
+                }
+            }
+        }
+
+        let score = 0;
+        for(let i = 0; i < m; i++) {
+            for(let j = 0; j < n; j++) {
+                if (JSON.stringify([i, j]) == JSON.stringify(getRep(i, j))) {
+                    score += 1;
+                }
+            }
+        }
+
+        return score;
+    }
+
+    let bestScore = 9999999999999;
+    for(let seconds = 0; seconds < 100000000; seconds++) {
+        let currentData = Array.from({length: positions.length}, (_, index) => index).map((index) => transform(index, seconds));
+        let grid = getGrid(currentData);
+        let score = getScore(grid);
+        if (score < bestScore) {
+            bestScore = score;
+            console.log(grid.map((row) => row.join('')).join('\n'));
+            console.log(`Score: ${score}\n`);
+            console.log(`Seconds: ${seconds}`)
+        }
+    }
 })
