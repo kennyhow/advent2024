@@ -1,5 +1,5 @@
 const fs = require('fs');
-fs.readFile('input.3.txt', 'utf-8', (err, data) => {
+fs.readFile('input.txt', 'utf-8', (err, data) => {
     const parseInput = (data) => {
         data = data.trim().split('\n').map((line) => line.trim());
         let grid = [], steps = [];
@@ -93,4 +93,19 @@ fs.readFile('input.3.txt', 'utf-8', (err, data) => {
         // console.log(grid.map((line) => line.join('')).join('\n'));
     })
     console.log(grid.map((line) => line.join('')).join('\n'));
+
+
+    const calcGPS = () => {
+        let total = 0;
+        for(let i = 0; i < n; i++) {
+            for(let j = 0; j < m; j++) {
+                if (grid[i][j] === 'O') {
+                    total += 100 * i + j;
+                }
+            }
+        }
+        return total;
+    }
+
+    console.log(calcGPS());
 })
