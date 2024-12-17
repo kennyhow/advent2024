@@ -156,11 +156,43 @@ fs.readFile('input.3.txt', 'utf-8', (err, data) => {
     }
 
     const getFrontiers = (direction, x, y) => {
-        
+        let result = [], queue = [[x, y]];
+        let [dx, dy] = getDeltaFromDirection(direction);
+
+        let visited = new Set();
+
+        while(queue.length > 0) {
+            let [a, b] = queue.pop();
+            if (visited.has(JSON.stringify([a, b]))) continue;
+            visited.add(JSON.stringify([a, b]));
+
+            let [next_a, next_b] = [a + dx, b + dy];
+
+            let cell = grid[next_a][next_b];
+            if ('[]'.includes(cell)) {
+                queue.push([next_a, next_b]);
+                switch(cell) {
+                    case '[':
+                        // include right(cell)
+                        queue.push([next_a, next_b + 1]);
+                        break;
+                    case ']':
+                        // include left(cell)
+                        queue.push([next_a, next_b - 1]);
+                        break;
+                    default:
+                        throw new Error("Invalid cell in getFrontiers");
+                }
+            }
+            else {
+                result.push([next_a, next_b]);
+            }
+        }
+        return Array.from(new Set(result));
     }
 
     const forcePush = (direction, x, y) => {
-
+        
     }
 
     const pushVertical = (direction, x, y) => {
