@@ -110,7 +110,7 @@ fs.readFile('input.txt', 'utf-8', (err, data) => {
     //console.log(calcGPS());
 })
 
-fs.readFile('input.3.txt', 'utf-8', (err, data) => {
+fs.readFile('input.4.txt', 'utf-8', (err, data) => {
     const parseInput = (data) => {
         data = data.trim().split('\n').map((line) => line.trim());
         let grid = [], steps = [];
@@ -124,16 +124,12 @@ fs.readFile('input.3.txt', 'utf-8', (err, data) => {
                 }
                 else {
                     console.log(`line is ${line}`);
-                    console.log(`after transformation, line is now ${line
-                        .replace(/\./g, '..')
-                        .replace(/#/g, '##')
-                        .replace(/O/g, '[]')
-                        .replace(/@/g, '@.')}`)
                     grid.push(line
                         .replace(/\./g, '..')
                         .replace(/#/g, '##')
                         .replace(/O/g, '[]')
-                        .replace(/@/g, '@.'));
+                        .replace(/@/g, '@.')
+                    .split(''));
                 }
             }
         })
@@ -185,24 +181,61 @@ fs.readFile('input.3.txt', 'utf-8', (err, data) => {
                 }
             }
             else {
-                result.push([next_a, next_b]);
+                result.push([a, b]);
             }
         }
         return Array.from(new Set(result));
     }
 
+    const debug = () => {
+        console.log(grid.map((row) => row.join('')).join('\n'))
+    }
+
     const forcePush = (direction, x, y) => {
-        
+        console.log("calling forcePush");
+        let [dx, dy] = getDeltaFromDirection(direction);
+        let frontier = [[x, y, '@']];
+        grid[x][y] = '.';
+
+        while(frontier.length > 0) {
+            let nextFrontier = new Set();
+            console.log(`frontier is now ${JSON.stringify(frontier)}`)
+            frontier.forEach(([x, y, c]) => {
+                // push frontier forward
+                let cell = grid[x + dx][y + dy];
+                grid[x + dx][y + dy] = c;
+                switch(cell) {
+                    case '.':
+                        break;
+                    case '[':
+                        nextFrontier.add([x + dx, y + dy, '[']);
+                        nextFrontier.add([x + dx, y + dy + 1, ']']);
+                        break;
+                    case ']':
+                        nextFrontier.add([x + dx, y + dy, ']']);
+                        nextFrontier.add([x + dx, y + dy - 1, '[']);
+                        break;
+                    default:
+                        throw new Error(`Invalid cell in forcePush(): ${cell}`);
+                }
+            })
+
+            frontier = Array.from(nextFrontier);
+        }
     }
 
     const pushVertical = (direction, x, y) => {
         let [dx, dy] = getDeltaFromDirection(direction);
         let frontier = getFrontiers(direction, x, y);
+        console.log(`in pushvertical, frontier is ${frontier}`)
 
         let canPush = true;
         frontier.forEach(([x_new, y_new]) => {
             canPush &= (grid[x_new + dx][y_new + dy] === '.');
         })
+
+        console.log(`canPush is ${canPush}`)
+
         if (!canPush) return [x, y];
         else {
             forcePush(direction, x, y);
@@ -238,4 +271,20 @@ fs.readFile('input.3.txt', 'utf-8', (err, data) => {
             return pushHorizontal(direction, x, y);
         }
     }
+
+    let [x, y] = [0, 0];
+    let [n, m] = [grid.length, grid[0].length];
+    for(let i = 0; i < n; i++) {
+        for(let j = 0; j < m; j++) {
+            if (grid[i][j] === '@') {
+                [x, y] = [i, j];
+            }
+        }
+    }
+
+    steps.split('').forEach((c) => {
+        [x, y] = push(c, x, y);
+        debug();
+        console.log()
+    })
 })
