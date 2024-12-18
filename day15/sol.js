@@ -110,7 +110,7 @@ fs.readFile('input.txt', 'utf-8', (err, data) => {
     //console.log(calcGPS());
 })
 
-fs.readFile('input.4.txt', 'utf-8', (err, data) => {
+fs.readFile('input.3.txt', 'utf-8', (err, data) => {
     const parseInput = (data) => {
         data = data.trim().split('\n').map((line) => line.trim());
         let grid = [], steps = [];
@@ -191,19 +191,21 @@ fs.readFile('input.4.txt', 'utf-8', (err, data) => {
         console.log(grid.map((row) => row.join('')).join('\n'))
     }
 
+    // TODO: FIX ERROR IN FORCEPUSH (probably)
     const forcePush = (direction, x, y) => {
         console.log("calling forcePush");
         let [dx, dy] = getDeltaFromDirection(direction);
         let frontier = [[x, y, '@']];
-        grid[x][y] = '.';
+        let allFrontiers = [];
 
         while(frontier.length > 0) {
+            allFrontiers.push(JSON.parse(JSON.stringify(frontier))); // add layer
+
             let nextFrontier = new Set();
             console.log(`frontier is now ${JSON.stringify(frontier)}`)
             frontier.forEach(([x, y, c]) => {
                 // push frontier forward
                 let cell = grid[x + dx][y + dy];
-                grid[x + dx][y + dy] = c;
                 switch(cell) {
                     case '.':
                         break;
@@ -222,6 +224,15 @@ fs.readFile('input.4.txt', 'utf-8', (err, data) => {
 
             frontier = Array.from(nextFrontier);
         }
+        console.log(JSON.stringify(allFrontiers));
+
+        allFrontiers.reverse().forEach((frontier) => {
+            frontier.forEach(([x, y, c]) => {
+                grid[x + dx][y + dy] = c;
+                grid[x][y] = '.';
+            })
+        })
+
     }
 
     const pushVertical = (direction, x, y) => {
