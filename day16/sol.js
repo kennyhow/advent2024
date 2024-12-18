@@ -111,7 +111,7 @@ fs.readFile('input.txt', 'utf-8', (err, data) => {
         return nextOrientation(nextOrientation(nextOrientation(orientation)));
     }
 
-    const getNextStates = (x, y, orientation) => {
+    let getNextStates = (x, y, orientation) => {
         let [dx, dy] = getDeltaFromOrientation(orientation);
         let states = [];
 
@@ -143,5 +143,74 @@ fs.readFile('input.txt', 'utf-8', (err, data) => {
         })
     }
 
+    let finalDist = Math.min(...Object.values(distance[xEnd][yEnd]));
     console.log(Math.min(...Object.values(distance[xEnd][yEnd])))
+
+    let newGrid = Array.from({length: n}, () => {
+        return Array.from({length: m}, () => ({
+            '>': '.',
+            '<': '.',
+            'v': '.',
+            '^': '.'
+        }))
+    });    
+
+    // (x, y) is tile if there exists some neighbour (a, b)
+    // such that dist(x, y) + transitionDistance = dist(a, b)
+    // equiv dist(x, y) = dist(a, b) - d
+    // we can just sort all states according to final distances, in descending order
+    let allStates = [];
+    for(let i = 0; i < n; i++) {
+        for(let j = 0; j < m; j++) {
+            for (let orientation of '^v<>') {
+                allStates.push([i, j, orientation])
+            }
+        }
+    }
+    allStates.sort((a, b) => distance[a[0]][a[1]][a[2]] - distance[b[0]][b[1]][b[2]]);
+    allStates = allStates.reverse(); // in descending order
+
+    //newGrid[xEnd][yEnd] = 'O';
+    for(let [orientation, dist] of Object.entries(distance[xEnd][yEnd])) {
+        if (dist == finalDist) {
+            newGrid[xEnd][yEnd][orientation] = 'O';
+        }
+    }
+
+    getNextStates = (x, y, orientation) => {
+        let [dx, dy] = getDeltaFromOrientation(orientation);
+        let states = [[1000, x, y, nextOrientation(orientation)], [1000, x, y, prevOrientation(orientation)]];
+
+        if (grid[x - dx][y - dy] !== '#') {
+            states.push([1, x - dx, y - dy, orientation]);
+        }
+        console.log(`states is ${states}`)
+        return states;
+    }
+
+    allStates.forEach(([x, y, orientation]) => {
+        if (newGrid[x][y][orientation] === 'O') {
+            // induct backwards
+            let nextStates = getNextStates(x, y, orientation);
+            nextStates.forEach(([d, nextX, nextY, nextOrientation]) => {
+                if (distance[nextX][nextY][nextOrientation] === distance[x][y][orientation] - d) {
+                    newGrid[nextX][nextY][nextOrientation] = 'O';
+                }
+            })
+        }
+    })
+
+
+    for(let i = 0; i < n; i++) {
+        for(let j = 0; j < m; j++) {
+            let isTile = false;
+            for(let cell of Object.values(newGrid[i][j])) {
+                isTile |= (cell === 'O');
+            }
+            grid[i][j] = (isTile ? 'O' : '.');
+        }
+    }
+    let finalGrid = grid.map((row) => row.join('')).join('\n');
+    let numTiles = finalGrid.split('').filter((c) => (c === 'O')).length;
+    console.log(numTiles);
 })
