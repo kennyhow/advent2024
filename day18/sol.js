@@ -62,6 +62,7 @@ class Dist {
 
 fs.readFile('input.txt', 'utf-8', (err, data) => {
     let [n, m] = [71, 71];
+    // let [n, m] = [7, 7];
     data = data.trim().split('\n');
     
     let regex = /(\d+),(\d+)/
@@ -115,4 +116,51 @@ fs.readFile('input.txt', 'utf-8', (err, data) => {
         }
     }
     print(distance[n - 1][m - 1]);
+
+    points = data.map((line) => {
+        // print(regex.exec(line).slice(1, 3).map(Number))
+        return regex.exec(line).slice(1, 3).map(Number);
+    });
+
+    const possible = (index) => {
+        let currentPoints = points.slice(0, index);
+        for(let i = 0; i < n; i++) {
+            for(let j = 0; j < m; j++) {
+                grid[i][j] = '.';
+            }
+        }
+        for(let [a, b] of currentPoints) {
+            grid[a][b] = '#';
+        }
+
+        let visited = new Set(); // contains [x, y]
+        let queue = [];
+        queue.push([0, 0]);
+        visited.add(JSON.stringify([0, 0]));
+
+        while(queue.length > 0) {
+            let [x, y] = queue.pop();
+            // print(`neighbours of ${[x, y]} is ${getNeighbours([x, y])}`)
+            for(let [a, b] of getNeighbours([x, y])) {
+                if (!visited.has(JSON.stringify([a, b]))) {
+                    visited.add(JSON.stringify([a, b]));
+                    queue.push([a, b]);
+                }
+            }
+        }
+        print(`visited is ${Array.from(visited)}`)
+        return visited.has(JSON.stringify([n - 1, m - 1]));
+    }
+
+    let [left, right] = [1, points.length - 1];
+    while (left < right) {
+        let mid = Math.floor((left + right + 1) / 2);
+        if (possible(mid)) {
+            left = mid;
+        }
+        else {
+            right = mid - 1;
+        }
+    }
+    print(points[left]);
 })
